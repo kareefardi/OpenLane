@@ -17,25 +17,27 @@ import subprocess
 import sys
 from ..utils.utils import *
 
+
 class Report:
-    def __init__(self, design, tag, design_name,params,run_path=None):
+    def __init__(self, design, tag, design_name, params, run_path=None):
         self.design = design
-        self.design_name=design_name
+        self.design_name = design_name
         self.tag = tag
         self.current_directory = os.path.dirname(__file__)
         self.report_script = os.path.join(self.current_directory, 'report.sh')
         if run_path is None:
-            run_path=get_run_path(design=design, tag=tag)
+            run_path = get_run_path(design=design, tag=tag)
         self.report_command = '{script} {path} {design_name} {script_dir}'.format(
-                script=self.report_script,
-                path=run_path,
-                design_name=self.design_name,
-                script_dir=self.current_directory
-            )
+            script=self.report_script,
+            path=run_path,
+            design_name=self.design_name,
+            script_dir=self.current_directory
+        )
         self.configuration = params
         self.raw_report = None
         self.formatted_report = None
 
+    error_flag = "E404"
     values = [
         'design',
         'design_name',
@@ -44,7 +46,7 @@ class Report:
         'total_runtime',
         'routed_runtime',
         'DIEAREA_mm^2',
-        'CellPer_mm^2' ,
+        'CellPer_mm^2',
         'OpenDP_Util',
         'Peak_Memory_Usage_MB',
         'cell_count',
@@ -69,7 +71,7 @@ class Report:
         'tns',
         'pl_tns',
         'optimized_tns',
-        'fastroute_tns' ,
+        'fastroute_tns',
         'spef_tns',
         'HPWL',
         'routing_layer1_pct',
@@ -102,7 +104,7 @@ class Report:
         'Diodes',
         'Total_Physical_Cells'
     ]
-    
+
     @classmethod
     def get_header(Self):
         header = ','.join(Self.values)
@@ -117,14 +119,20 @@ class Report:
         dieareaIdx = self.values.index('DIEAREA_mm^2') - prefixIdx
         cell_countIdx = self.values.index('cell_count') - prefixIdx
         splited_report = self.raw_report.split()
-        splited_report[dieareaIdx] = str(float(splited_report[dieareaIdx])/1000000)
-        splited_report[cellperumIdx] = str(int(splited_report[cell_countIdx])/float(splited_report[dieareaIdx]))
+
+        if (splited_report[dieareaIdx] != self.error_flag):
+            splited_report[dieareaIdx] = str(float(splited_report[dieareaIdx])/1000000)
+        if ((splited_report[dieareaIdx] == self.error_flag) or (splited_report[cell_countIdx] == self.error_flag)):
+            splited_report[cellperumIdx] = self.error_flag
+        else:
+            splited_report[cellperumIdx] = str(int(splited_report[cell_countIdx])/float(splited_report[dieareaIdx]))
+
         report = ",".join(splited_report)
         report = "{design},{design_name},{tag},".format(
-                design=self.design,
-                design_name=self.design_name,
-                tag=self.tag
-                ) + report + "," + ",".join(self.configuration)
+            design=self.design,
+            design_name=self.design_name,
+            tag=self.tag
+        ) + report + "," + ",".join(self.configuration)
 
         return report
 
@@ -134,6 +142,8 @@ class Report:
 
         return self.formatted_report
 
+
 if __name__ == '__main__':
-    report = Report('test_design', 'test_tag','test_design_name' ,'test_config')
+    report = Report('test_design', 'test_tag',
+                    'test_design_name', 'test_config')
     print(Report.get_header())

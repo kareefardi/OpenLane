@@ -1,5 +1,5 @@
-# Copyright 2020 Efabless Corporation
-#
+# Copyright 2021 Efabless Corporation
+
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -61,9 +61,11 @@ proc add_to_env {my_array} {
 
 # helper function for argument parsing
 proc is_keyword_arg { arg } {
-  if { [string length $arg] >= 2 \
+    if { \
+        [string length $arg] >= 2 \
 	 && [string index $arg 0] == "-" \
-	 && [string is alpha [string index $arg 1]] } {
+        && [string is alpha [string index $arg 1]] \
+    } {
     return 1
   } else {
     return 0

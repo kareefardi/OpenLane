@@ -18,6 +18,8 @@ import os
 import sys
 import pandas as pd
 import re
+from ..report.report import Report
+
 
 def get_design_path(design):
     path = os.path.abspath(design) + '/'
@@ -33,6 +35,7 @@ def get_design_path(design):
     else:
         return None
 
+
 def get_run_path(design, tag):
     DEFAULT_PATH = os.path.join(
         get_design_path(design),
@@ -43,50 +46,69 @@ def get_run_path(design, tag):
 
     return DEFAULT_PATH
 
+
 def get_design_name(design, config):
-        design_path= get_design_path(design=design)
-        if design_path is None:
-            print("{design} not found, skipping...".format(design=design))
-            return "[INVALID]: design path doesn't exist"
-        config_file = "{design_path}/{config}.tcl".format(
-                design_path=design_path,
-                config=config,
-        )
-        try:
-            config_file_opener = open(config_file, "r")
-            configs = config_file_opener.read()
-            config_file_opener.close()
-            pattern = re.compile(r'\s*?set ::env\(DESIGN_NAME\)\s*?(\S+)\s*')
-            for name in re.findall(pattern, configs):
-                    return name.replace("\"","")
-            return "[INVALID]: design name doesn't exist inside the config file!"
-        except OSError:
-            return "[INVALID]: design config doesn't exist"
+    design_path = get_design_path(design=design)
+    if design_path is None:
+        print("{design} not found, skipping...".format(design=design))
+        return "[INVALID]: design path doesn't exist"
+    config_file = "{design_path}/{config}.tcl".format(
+        design_path=design_path,
+        config=config,
+    )
+    try:
+        config_file_opener = open(config_file, "r")
+        configs = config_file_opener.read()
+        config_file_opener.close()
+        pattern = re.compile(r'\s*?set ::env\(DESIGN_NAME\)\s*?(\S+)\s*')
+        for name in re.findall(pattern, configs):
+            return name.replace("\"", "")
+        return "[INVALID]: design name doesn't exist inside the config file!"
+    except OSError:
+        return "[INVALID]: design config doesn't exist"
 
 # addComputedStatistics adds: CellPerMMSquaredOverCoreUtil, suggested_clock_period, and suggested_clock_frequency to a report.csv
+
+
 def addComputedStatistics(filename):
     data = pd.read_csv(filename, error_bad_lines=False)
     df = pd.DataFrame(data)
 
     diearea_mm2_index = df.columns.get_loc("DIEAREA_mm^2")
     df.insert(diearea_mm2_index,
-        column='(Cell/mm^2)/Core_Util',
-        value= df['CellPer_mm^2'] / (df['FP_CORE_UTIL'] / 100),
-        allow_duplicates=True
-    )
+              column='(Cell/mm^2)/Core_Util',
+              value=[Report.error_flag for i in range(df.shape[0])],
+              allow_duplicates=True
+              )
+    ratio_mask = (df['CellPer_mm^2'] != Report.error_flag) \
+        & (df['FP_CORE_UTIL'] != Report.error_flag)
+    ratio_df = df[ratio_mask]
+    ratio_df['(Cell/mm^2)/Core_Util'] = ratio_df['CellPer_mm^2'] / \
+        (ratio_df['FP_CORE_UTIL'] / 100)
 
-    suggest_clock_period = df['CLOCK_PERIOD'] - df['spef_wns']
+    df = pd.concat([ratio_df, df[~ratio_mask]])
+
     clock_period_index = df.columns.get_loc("CLOCK_PERIOD")
     df.insert(
         clock_period_index,
         column='suggested_clock_period',
-        value=suggest_clock_period,
+        value=[Report.error_flag for i in range(df.shape[0])],
+        # value=suggested_clock_period,
         allow_duplicates=True
     )
     df.insert(
         clock_period_index,
         column='suggested_clock_frequency',
-        value=1000.0/suggest_clock_period,
+        value=[Report.error_flag for i in range(df.shape[0])],
         allow_duplicates=True
     )
+
+    suggested_clock_mask = (df['CLOCK_PERIOD'] != Report.error_flag) \
+        & (df['spef_wns'] != Report.error_flag)
+    suggested_clock_df = df[suggested_clock_mask]
+    suggested_clock_period = suggested_clock_df['CLOCK_PERIOD'] - suggested_clock_df['spef_wns']
+    suggested_clock_df["suggested_clock_period"] = suggested_clock_period
+    suggested_clock_df["suggested_clock_frequency"] = 1000.0 / suggested_clock_period
+    df = pd.concat([suggested_clock_df, df[~suggested_clock_mask]])
+
     df.to_csv(filename)

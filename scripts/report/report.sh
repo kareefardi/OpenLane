@@ -218,8 +218,12 @@ tritonRoute_memoryPeak=$(grep ", peak = " $tritonRoute_log -s | tail -1 | sed -E
 if ! [[ $tritonRoute_memoryPeak ]]; then tritonRoute_memoryPeak="E404"; fi
 
 #Extracting TritonRoute Violations Information
-tritonRoute_violations=$(grep -si "Number of violations" $tritonRoute_log | tail -1 | python3 -c 'import re; print(re.match(r"\[.+?\].*?\=\s*(\d+)", input())[1])')
-if ! [[ $tritonRoute_violations ]]; then tritonRoute_violations="E404"; fi
+if [[ $(test_file $tritonRoute_log) ]]; then
+        tritonRoute_violations=$(grep -si "Number of violations" $tritonRoute_log | tail -1 | python3 -c 'import re; print(re.match(r"\[.+?\].*?\=\s*(\d+)", input())[1])')
+        if ! [[ $tritonRoute_violations ]]; then tritonRoute_violations="E404"; fi
+else
+        tritonRoute_violations="E404";
+fi
 Other_violations=$tritonRoute_violations;
 
 if [ -f $tritonRoute_drc ]; then
@@ -368,20 +372,28 @@ level=$(grep -e "ABC: netlist" $yosys_log -s | tail -1 | sed -r 's/.*lev.*[^0-9]
 if ! [[ $level ]]; then level="E404"; fi
 
 #Extracting layer usage percentage
-usageLine=$(grep -n -E "Layer\s+Resource" $fr_log | tail -1 | sed -E 's/(\S+):.*/\1/')
+layer1="E404"
+layer2="E404"
+layer3="E404"
+layer4="E404"
+layer5="E404"
+layer6="E404"
+if [[ $(test_file $fr_log) ]]; then
+        usageLine=$(grep -n -E "Layer\s+Resource" $fr_log | tail -1 | sed -E 's/(\S+):.*/\1/')
 
-layer1=$(sed -n "$(expr $usageLine + 2)p" $fr_log | sed -E 's/.*\s+(\S+)%.*/\1/')
-if ! [[ $layer1 ]]; then layer1="E404"; fi
-layer2=$(sed -n "$(expr $usageLine + 3)p" $fr_log | sed -E 's/.*\s+(\S+)%.*/\1/')
-if ! [[ $layer2 ]]; then layer2="E404"; fi
-layer3=$(sed -n "$(expr $usageLine + 4)p" $fr_log | sed -E 's/.*\s+(\S+)%.*/\1/')
-if ! [[ $layer3 ]]; then layer3="E404"; fi
-layer4=$(sed -n "$(expr $usageLine + 5)p" $fr_log | sed -E 's/.*\s+(\S+)%.*/\1/')
-if ! [[ $layer4 ]]; then layer4="E404"; fi
-layer5=$(sed -n "$(expr $usageLine + 6)p" $fr_log | sed -E 's/.*\s+(\S+)%.*/\1/')
-if ! [[ $layer5 ]]; then layer5="E404"; fi
-layer6=$(sed -n "$(expr $usageLine + 7)p" $fr_log | sed -E 's/.*\s+(\S+)%.*/\1/')
-if ! [[ $layer6 ]]; then layer6="E404"; fi
+        layer1=$(sed -n "$(expr $usageLine + 2)p" $fr_log | sed -E 's/.*\s+(\S+)%.*/\1/')
+        if ! [[ $layer1 ]]; then layer1="E404"; fi
+        layer2=$(sed -n "$(expr $usageLine + 3)p" $fr_log | sed -E 's/.*\s+(\S+)%.*/\1/')
+        if ! [[ $layer2 ]]; then layer2="E404"; fi
+        layer3=$(sed -n "$(expr $usageLine + 4)p" $fr_log | sed -E 's/.*\s+(\S+)%.*/\1/')
+        if ! [[ $layer3 ]]; then layer3="E404"; fi
+        layer4=$(sed -n "$(expr $usageLine + 5)p" $fr_log | sed -E 's/.*\s+(\S+)%.*/\1/')
+        if ! [[ $layer4 ]]; then layer4="E404"; fi
+        layer5=$(sed -n "$(expr $usageLine + 6)p" $fr_log | sed -E 's/.*\s+(\S+)%.*/\1/')
+        if ! [[ $layer5 ]]; then layer5="E404"; fi
+        layer6=$(sed -n "$(expr $usageLine + 7)p" $fr_log | sed -E 's/.*\s+(\S+)%.*/\1/')
+        if ! [[ $layer6 ]]; then layer6="E404"; fi
+fi
 
 #Extracting Endcaps and TapCells
 endcaps=$(grep "Endcaps inserted:" $tapcell_log -s | tail -1 | sed -E 's/.*Endcaps inserted: (\S+)/\1/')

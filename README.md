@@ -552,11 +552,11 @@ To check the original author list of OpenLane, check [this][33].
 [6]: https://github.com/The-OpenROAD-Project/OpenROAD/tree/master/src/ppl
 [7]: https://github.com/The-OpenROAD-Project/OpenROAD/tree/master/src/tap
 [8]: https://github.com/The-OpenROAD-Project/OpenSTA
-[9]: https://github.com/The-OpenROAD-Project/OpenROAD/tree/master/src/replace
+[9]: https://github.com/The-OpenROAD-Project/OpenROAD/tree/master/src/gpl
 [10]: https://github.com/The-OpenROAD-Project/OpenROAD/tree/master/src/dpl
 [11]: https://github.com/The-OpenROAD-Project/OpenROAD/tree/master/src/cts
 [12]: https://github.com/The-OpenROAD-Project/OpenROAD/tree/master/src/grt
-[13]: https://github.com/The-OpenROAD-Project/OpenROAD/tree/master/src/TritonRoute
+[13]: https://github.com/The-OpenROAD-Project/OpenROAD/tree/master/src/drt
 [14]: https://github.com/RTimothyEdwards/magic
 [15]: https://github.com/The-OpenROAD-Project/OpenROAD/tree/master/src/rsz
 [16]: https://github.com/The-OpenROAD-Project/OpenROAD/tree/master/src/pdn
