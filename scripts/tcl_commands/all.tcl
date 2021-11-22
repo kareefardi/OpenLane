@@ -629,6 +629,11 @@ proc prep {args} {
         try_catch echo "openlane $::env(OPENLANE_VERSION)" > $::env(RUN_DIR)/OPENLANE_VERSION
     }
 
+    if { [info exists ::env(EXTRA_GDS_FILES)] } {
+        puts_info "Checking existence of ::env(EXTRA_GDS_FILES) {$::env(EXTRA_GDS_FILES)} ..."
+        assert_files_exist $::env(EXTRA_GDS_FILES)
+    }
+
     puts_info "Preparation complete"
     TIMER::timer_stop
     exec echo "[TIMER::get_runtime]" >> [index_file $::env(LOG_DIR)/prep_runtime.txt 0]
