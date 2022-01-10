@@ -196,7 +196,7 @@ proc run_openroad_script {args} {
     }
 
     set exit_code [catch {exec $::env(OPENROAD_BIN) -exit $script |& tee $::env(TERMINAL_OUTPUT) $arg_values(-indexed_log)} error_msg]
-    exec grep WARNING $arg_values(-indexed_log) > $arg_values(-indexed_log).warnings
+    catch {exec grep WARNING $arg_values(-indexed_log) > $arg_values(-indexed_log).warnings} grep_error
 
     if { $exit_code } {
         set tool [string range $args 0 [string first " " $args]]
