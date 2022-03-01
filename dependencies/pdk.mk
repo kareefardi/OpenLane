@@ -31,53 +31,39 @@ OPEN_PDK_ARGS ?= ""
 .PHONY: pdk pdk-with-sram
 pdk-with-sram: OPEN_PDK_ARGS += --enable-sram-sky130
 pdk-with-sram: pdk
-pdk: skywater-pdk skywater-library open_pdks build-pdk gen-sources
+pdk: skywater-pdk open-pdks
 
 $(PDK_ROOT):
 	mkdir -p $(PDK_ROOT)
 
-$(PDK_ROOT)/skywater-pdk/LICENSE: | $(PDK_ROOT)
-	git clone $(shell $(PYTHON_BIN) ./dependencies/tool.py sky130 -f repo) $(PDK_ROOT)/skywater-pdk
-
 .PHONY: skywater-pdk
-skywater-pdk: $(PDK_ROOT)/skywater-pdk/LICENSE
+skywater-pdk: $(PDK_ROOT)/skywater-pdk
+$(PDK_ROOT)/skywater-pdk:
+	git clone $(shell $(PYTHON_BIN) ./dependencies/tool.py sky130 -f repo) $(PDK_ROOT)/skywater-pdk
 	cd $(PDK_ROOT)/skywater-pdk && \
 		git checkout main && \
 		git submodule init && git pull --no-recurse-submodules && \
 		git checkout -qf $(SKYWATER_COMMIT)
-
-.PHONY: skywater-library
-skywater-library: $(PDK_ROOT)/skywater-pdk
-	cd $(PDK_ROOT)/skywater-pdk && \
 		for library in $(LIBRARY_LIST); do \
 			git submodule update --init libraries/$$library/latest ;\
 		done; \
 		$(MAKE) -j$(NPROC) timing
 
-### OPEN_PDKS
+.PHONY: open_pdks
+open-pdks: $(PDK_ROOT)/open_pdks
 $(PDK_ROOT)/open_pdks:
 	git clone $(shell $(PYTHON_BIN) ./dependencies/tool.py open_pdks -f repo) $(PDK_ROOT)/open_pdks
-
-.PHONY: open_pdks
-open_pdks: $(PDK_ROOT)/ $(PDK_ROOT)/open_pdks
 	cd $(PDK_ROOT)/open_pdks && \
 		git checkout master && \
 		git pull && \
 		git checkout -qf $(OPEN_PDKS_COMMIT)
-
-.PHONY: build-pdk
-build-pdk: $(PDK_ROOT)/open_pdks $(PDK_ROOT)/skywater-pdk
-	[ -d $(PDK_ROOT)/sky130A ] && rm -rf $(PDK_ROOT)/sky130A || true
-	
 	$(ENV_COMMAND) sh -c "\
 		cd $(PDK_ROOT)/open_pdks && \
 		./configure --enable-sky130-pdk=$(PDK_ROOT)/skywater-pdk/libraries $(OPEN_PDK_ARGS)\
 	"
-
 	cd $(PDK_ROOT)/open_pdks/sky130 && \
 		$(MAKE) veryclean && \
 		$(MAKE) prerequisites
-	
 	$(ENV_COMMAND) sh -c "\
 		cd $(PDK_ROOT)/open_pdks/sky130 && \
 		make && \
@@ -85,7 +71,11 @@ build-pdk: $(PDK_ROOT)/open_pdks $(PDK_ROOT)/skywater-pdk
 		make clean \
 	"
 
-gen-sources: $(PDK_ROOT)/sky130A
+
+
+.PHONY: gen-sources
+gen-sources: $(PDK_ROOT)/sky130A/SOURCES
+$(PDK_ROOT)/sky130A/SOURCES:
 	touch $(PDK_ROOT)/sky130A/SOURCES
 	OPENLANE_COMMIT=$(git rev-parse HEAD)
 	printf "openlane " > $(PDK_ROOT)/sky130A/SOURCES
@@ -97,3 +87,8 @@ gen-sources: $(PDK_ROOT)/sky130A
 	cd $(PDK_ROOT)/skywater-pdk && git rev-parse HEAD >> $(PDK_ROOT)/sky130A/SOURCES
 	printf "open_pdks " >> $(PDK_ROOT)/sky130A/SOURCES
 	cd $(PDK_ROOT)/open_pdks && git rev-parse HEAD >> $(PDK_ROOT)/sky130A/SOURCES
+
+.PHONY: clean-pdk
+clean-pdk-full:
+	rm -rf $(PDK_ROOT)
+
