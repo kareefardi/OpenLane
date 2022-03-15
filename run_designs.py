@@ -171,8 +171,9 @@ def cli(
         os.makedirs(store_dir, exist_ok=True)
 
     log = logging.getLogger("log")
-    log_formatter = logging.Formatter("%(asctime)s | %(levelname)-5s | %(message)s",
-                                      "%m-%d %H:%M")
+    log_formatter = logging.Formatter(
+        "%(asctime)s | %(levelname)-5s | %(message)s", "%m-%d %H:%M"
+    )
     handler1 = logging.FileHandler(
         "{report_file_name}.log".format(report_file_name=report_file_name), "w"
     )
@@ -218,7 +219,14 @@ def cli(
         printRemDesignList()
         allow_print_rem_designs = True
 
-    def update(status: str, design: str, config:str, tag:str , message: str = None, error: bool = False):
+    def update(
+        status: str,
+        design: str,
+        config: str,
+        tag: str,
+        message: str = None,
+        error: bool = False,
+    ):
         prefix = f"%-7s | %-8s | %-{len(config)}s | %-{len(tag)}s"
         str = prefix % (status, design, config, tag)
         if message is not None:
@@ -290,7 +298,7 @@ def cli(
             report = Report(design, tag, design_name, params).get_report()
             report_log.info(report)
 
-            report_file_name=f"{run_path}/report.csv"
+            report_file_name = f"{run_path}/report.csv"
             with open(report_file_name, "w") as report_file:
                 report_file.write(
                     Report.get_header() + "," + ConfigHandler.get_header()
@@ -301,7 +309,13 @@ def cli(
             update("DONE", design, config, tag, f"Check report {report_file_name}")
             if benchmark is not None:
                 try:
-                    update("DONE", design, config, tag, "Comparing with benchmark results...")
+                    update(
+                        "DONE",
+                        design,
+                        config,
+                        tag,
+                        "Comparing with benchmark results...",
+                    )
                     subprocess.check_output(
                         [
                             "python3",
@@ -338,7 +352,12 @@ def cli(
                     pass
                 except Exception:
                     update(
-                        "ERROR", design, config, tag, "Failed to delete run directory.", error=True
+                        "ERROR",
+                        design,
+                        config,
+                        tag,
+                        "Failed to delete run directory.",
+                        error=True,
                     )
                     flow_failure_flag = True
 
@@ -350,7 +369,9 @@ def cli(
         for design in designs:
             base_path = utils.get_design_path(design=design)
             if base_path is None:
-                update("ERROR", design, config, tag, "Cannot run: Not found", error=True)
+                update(
+                    "ERROR", design, config, tag, "Cannot run: Not found", error=True
+                )
                 if print_rem_time is not None:
                     if design in rem_designs.keys():
                         rem_designs.pop(design)
