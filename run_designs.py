@@ -171,7 +171,7 @@ def cli(
         os.makedirs(store_dir, exist_ok=True)
 
     log = logging.getLogger("log")
-    log_formatter = logging.Formatter("%(asctime)s - %(levelname)5s| %(message)s",
+    log_formatter = logging.Formatter("%(asctime)s | %(levelname)-5s | %(message)s",
                                       "%m-%d %H:%M")
     handler1 = logging.FileHandler(
         "{report_file_name}.log".format(report_file_name=report_file_name), "w"
@@ -219,10 +219,10 @@ def cli(
         allow_print_rem_designs = True
 
     def update(status: str, design: str, config:str, tag:str , message: str = None, error: bool = False):
-        prefix = f"%-6s | %-{len(design)}s | %-{len(config)} | %-{len(tag)}"
+        prefix = f"%-7s | %-8s | %-{len(config)}s | %-{len(tag)}s"
         str = prefix % (status, design, config, tag)
         if message is not None:
-            str += f": {message}"
+            str += f" | {message}"
 
         if error:
             log.error(str)
@@ -231,6 +231,8 @@ def cli(
 
     flow_failure_flag = False
     design_failure_flag = False
+
+    update("STATUS", "DESIGN", "CONFIG", "TAG")
 
     def run_design(designs_queue):
         nonlocal design_failure_flag, flow_failure_flag
@@ -395,6 +397,7 @@ def cli(
             q.put((design, config, default_config_tag, design_name))
 
     workers = []
+    exit()
     for i in range(num_workers):
         workers.append(threading.Thread(target=run_design, args=(q,)))
         workers[i].start()
