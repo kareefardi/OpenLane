@@ -171,7 +171,8 @@ def cli(
         os.makedirs(store_dir, exist_ok=True)
 
     log = logging.getLogger("log")
-    log_formatter = logging.Formatter("[%(asctime)s - %(levelname)5s] %(message)s")
+    log_formatter = logging.Formatter("%(asctime)s - %(levelname)5s| %(message)s",
+                                      "%m-%d %H:%M")
     handler1 = logging.FileHandler(
         "{report_file_name}.log".format(report_file_name=report_file_name), "w"
     )
@@ -217,8 +218,9 @@ def cli(
         printRemDesignList()
         allow_print_rem_designs = True
 
-    def update(status: str, design: str, message: str = None, error: bool = False):
-        str = "[%-5s] %-20s" % (status, design)
+    def update(status: str, design: str, config:str, tag:str , message: str = None, error: bool = False):
+        prefix = f"%-6s | %-{len(design)}s | %-{len(config)} | %-{len(tag)}"
+        str = prefix % (status, design, config, tag)
         if message is not None:
             str += f": {message}"
 
@@ -237,7 +239,7 @@ def cli(
                 timeout=3
             )  # 3s timeout
             run_path = utils.get_run_path(design=design, tag=tag)
-            update("START", design)
+            update("START", design, config, tag)
             command = [
                 os.getenv("OPENLANE_ENTRY") or "./flow.tcl",
                 "-design",
@@ -256,6 +258,12 @@ def cli(
                     subprocess.check_call(command)
                 else:
                     subprocess.check_output(command, stderr=subprocess.PIPE)
+                update(
+                    "SUCCESS",
+                    design,
+                    config,
+                    tag,
+                )
             except subprocess.CalledProcessError:
                 if print_rem_time is not None:
                     rmDesignFromPrintList(design)
@@ -264,6 +272,8 @@ def cli(
                 update(
                     "FAIL",
                     design,
+                    config,
+                    tag,
                     f"Check {run_path_relative}/openlane.log",
                     error=True,
                 )
@@ -272,22 +282,24 @@ def cli(
             if print_rem_time is not None and not skip_rm_from_rems:
                 rmDesignFromPrintList(design)
 
-            update("DONE", design, "Writing report...")
+            update("DONE", design, config, tag, "Writing report...")
             params = ConfigHandler.get_config(design, tag)
 
             report = Report(design, tag, design_name, params).get_report()
             report_log.info(report)
 
-            with open(f"{run_path}/report.csv", "w") as report_file:
+            report_file_name=f"{run_path}/report.csv"
+            with open(report_file_name, "w") as report_file:
                 report_file.write(
                     Report.get_header() + "," + ConfigHandler.get_header()
                 )
                 report_file.write("\n")
                 report_file.write(report)
 
+            update("DONE", design, config, tag, f"Check report {report_file_name}")
             if benchmark is not None:
                 try:
-                    update("DONE", design, "Comparing with benchmark results...")
+                    update("DONE", design, config, tag, "Comparing with benchmark results...")
                     subprocess.check_output(
                         [
                             "python3",
@@ -309,20 +321,22 @@ def cli(
                     update(
                         "ERROR",
                         design,
+                        config,
+                        tag,
                         f"Failed to compare with benchmark: {error_msg}",
                     )
                     flow_failure_flag = True
 
             if delete:
                 try:
-                    update("DONE", design, "Deleting run directory...")
+                    update("DONE", design, config, tag, "Deleting run directory...")
                     shutil.rmtree(run_path)
-                    update("DONE", design, "Deleted run directory.")
+                    update("DONE", design, config, tag, "Deleted run directory.")
                 except FileNotFoundError:
                     pass
                 except Exception:
                     update(
-                        "ERROR", design, "Failed to delete run directory.", error=True
+                        "ERROR", design, config, tag, "Failed to delete run directory.", error=True
                     )
                     flow_failure_flag = True
 
@@ -334,14 +348,14 @@ def cli(
         for design in designs:
             base_path = utils.get_design_path(design=design)
             if base_path is None:
-                update("ERROR", design, "Cannot run: Not found", error=True)
+                update("ERROR", design, config, tag, "Cannot run: Not found", error=True)
                 if print_rem_time is not None:
                     if design in rem_designs.keys():
                         rem_designs.pop(design)
                 continue
             err, design_name = utils.get_design_name(design, config)
             if err is not None:
-                update("ERROR", design, f"Cannot run: {err}", error=True)
+                update("ERROR", design, config, tag, f"Cannot run: {err}", error=True)
                 continue
             base_config_path = base_path + "base_config.tcl"
 
@@ -368,7 +382,7 @@ def cli(
         for design in designs:
             base_path = utils.get_design_path(design=design)
             if base_path is None:
-                update("ALERT", design, "Not found, skipping...")
+                update("ALERT", design, config, tag, "Not found, skipping...")
                 if print_rem_time is not None:
                     if design in rem_designs.keys():
                         rem_designs.pop(design)
@@ -376,7 +390,7 @@ def cli(
             default_config_tag = "config_{tag}".format(tag=tag)
             err, design_name = utils.get_design_name(design, config)
             if err is not None:
-                update("ERROR", design, f"Cannot run: {err}")
+                update("ERROR", design, config, tag, f"Cannot run: {err}")
                 continue
             q.put((design, config, default_config_tag, design_name))
 
