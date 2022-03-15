@@ -240,8 +240,6 @@ def cli(
     flow_failure_flag = False
     design_failure_flag = False
 
-    update("STATUS", "DESIGN", "CONFIG", "TAG")
-
     def run_design(designs_queue):
         nonlocal design_failure_flag, flow_failure_flag
         while not designs_queue.empty():
