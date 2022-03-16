@@ -418,7 +418,6 @@ def cli(
             q.put((design, config, default_config_tag, design_name))
 
     workers = []
-    exit()
     for i in range(num_workers):
         workers.append(threading.Thread(target=run_design, args=(q,)))
         workers[i].start()
