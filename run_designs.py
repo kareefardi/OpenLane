@@ -298,8 +298,8 @@ def cli(
             report = Report(design, tag, design_name, params).get_report()
             report_log.info(report)
 
-            report_file_name = f"{run_path}/report.csv"
-            with open(report_file_name, "w") as report_file:
+            report_file = f"{run_path}/report.csv"
+            with open(report_file, "w") as report_file:
                 report_file.write(
                     Report.get_header() + "," + ConfigHandler.get_header()
                 )
