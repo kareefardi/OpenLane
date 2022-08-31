@@ -24,7 +24,7 @@ if {  [info exist ::env(EXTRA_LEFS)] } {
 }
 
 # Read def and load design
-def read $::env(CURRENT_DEF)
+def read $::env(CURRENT_DEF) -labels
 
 load $::env(DESIGN_NAME)
 select top cell
