@@ -228,14 +228,15 @@ def cli(
             )  # 3s timeout
             run_path = utils.get_run_path(design=design, tag=tag)
             update("START", design)
+            config_file = f"{design}/{config}.tcl"
             command = [
                 os.getenv("OPENLANE_ENTRY") or "./flow.tcl",
                 "-design",
                 design,
                 "-tag",
                 tag,
-                "-config_tag",
-                config,
+                "-config_file",
+                config_file,
                 "-overwrite",
                 "-no_save",
                 "-run_hooks",
