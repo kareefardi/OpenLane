@@ -37,7 +37,7 @@ proc run_cts {args} {
 
         run_openroad_script $::env(SCRIPTS_DIR)/openroad/cts.tcl\
             -indexed_log $log\
-            -save "to=$::env(cts_results),noindex,def,sdc,odb"
+            -save "to=$::env(cts_results),noindex,def,sdc,odb,nelist"
 
         check_cts_clock_nets
 
