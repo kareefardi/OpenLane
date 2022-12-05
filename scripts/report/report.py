@@ -503,7 +503,7 @@ class Report(object):
         klayout_violations = -1
         if klayout_drc_content is not None:
             klayout_violations = 0
-            for line in klayout_violations.split("\n"):
+            for line in klayout_drc_content.split("\n"):
                 if "<item>" in line:
                     klayout_violations += 1
 
