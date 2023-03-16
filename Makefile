@@ -90,7 +90,11 @@ endif
 # container if the user had previously installed it.
 ENV_START = docker run --rm\
 	-v $(OPENLANE_DIR):/openlane\
+	-v $(OPENLANE_DIR):$(shell pwd)\
 	-v $(OPENLANE_DIR)/designs:/openlane/install\
+	-w $(shell pwd) \
+	-e OPENLANE_ROOT=$(shell pwd)\
+	-e PWD=$(shell pwd) \
 	$(PDK_OPTS)\
 	$(STD_CELL_OPTS)\
 	$(DOCKER_OPTIONS)
@@ -120,6 +124,10 @@ get-openlane:
 mount:
 	cd $(OPENLANE_DIR) && \
 		$(ENV_START) -ti $(OPENLANE_IMAGE_NAME)-$(DOCKER_ARCH)
+
+.PHONY:
+run:
+	$(ENV_START) -ti $(OPENLANE_IMAGE_NAME)-$(DOCKER_ARCH) $(run)
 
 .PHONY: pdk
 pdk: venv/created

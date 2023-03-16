@@ -1108,7 +1108,8 @@ proc heal_antenna_violators {args} {
             -output_def $::env(CURRENT_DEF)\
             --violations-file $::env(ANTENNA_VIOLATOR_LIST)\
             --fake-diode $::env(FAKEDIODE_CELL)\
-            --true-diode $::env(DIODE_CELL)
+            --true-diode $::env(DIODE_CELL) \
+            -indexed_log [index_file $::env(routing_logs)/replace_fake.log]
 
         TIMER::timer_stop
         exec echo "[TIMER::get_runtime]" | python3 $::env(SCRIPTS_DIR)/write_runtime.py "heal antenna violators - openlane"

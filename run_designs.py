@@ -200,7 +200,7 @@ def cli(
         os.makedirs(store_dir, exist_ok=True)
 
     log = logging.getLogger("log")
-    log_formatter = logging.Formatter("[%(asctime)s - %(levelname)5s] %(message)s")
+    log_formatter = logging.Formatter("%(asctime)s | %(message)s", "%Y-%m-%d %H:%M")
     handler1 = logging.FileHandler(f"{report_file_name}.log", "w")
     handler1.setFormatter(log_formatter)
     log.addHandler(handler1)
@@ -243,9 +243,11 @@ def cli(
         allow_print_rem_designs = True
 
     def update(status: str, design: str, message: str = None, error: bool = False):
-        str = "[%-5s] %-20s" % (status, design)
+            #update("START", design, tag)
+        width = 10
+        str = f"%-7s| %-{width}s" % (status, design[:width-3] + "." * 3 if len(design) > width else design)
         if message is not None:
-            str += f": {message}"
+            str += f" | {message}"
 
         if error:
             log.error(str)
@@ -349,17 +351,18 @@ def cli(
 
             try:
                 params = ConfigHandler.get_config_for_run(None, design, tag)
-                update("DONE", design, f"{tag}: Writing report...")
 
-                report = Report(design, tag, design_name, params).get_report()
-                report_log.info(report)
+                report = Report(design, tag, design_name, params)
+                report_str = Report(design, tag, design_name, params).get_report()
+                report_log.info(report_str)
 
                 with open(f"{run_path}/report.csv", "w") as report_file:
                     report_file.write(
-                        Report.get_header() + "," + ConfigHandler.get_header()
+                        Report.get_header() + "," + ",".join(params.keys())
                     )
                     report_file.write("\n")
-                    report_file.write(report)
+                    report_file.write(report_str)
+                update("SUCESS", design, f"{tag} | report: {os.path.relpath(run_path)}/report.csv")
             except FileNotFoundError:
                 pass
 
@@ -454,36 +457,36 @@ def cli(
             workers[i].join(100)
         log.info(f"Exiting thread {i}...")
 
-    log.info("Getting top results...")
-    subprocess.check_output(
-        [
-            "python3",
-            "./scripts/report/get_best.py",
-            "-i",
-            report_handler.baseFilename,
-            "-o",
-            f"{report_file_name}_best.csv",
-        ]
-    )
+    #log.info("Getting top results...")
+    #subprocess.check_output(
+    #    [
+    #        "python3",
+    #        "./scripts/report/get_best.py",
+    #        "-i",
+    #        report_handler.baseFilename,
+    #        "-o",
+    #        f"{report_file_name}_best.csv",
+    #    ]
+    #)
 
-    utils.add_computed_statistics(report_file_name + ".csv")
-    utils.add_computed_statistics(report_file_name + "_best.csv")
+    #utils.add_computed_statistics(report_file_name + ".csv")
+    #utils.add_computed_statistics(report_file_name + "_best.csv")
 
-    if benchmark is not None:
-        log.info("Benchmarking...")
-        full_benchmark_comp_cmd = [
-            "python3",
-            "./scripts/compare_regression_reports.py",
-            "--no-full-benchmark",
-            "--benchmark",
-            benchmark,
-            "--output-report",
-            f"{report_file_name}.rpt",
-            "--output-xlsx",
-            f"{report_file_name}.rpt.xlsx",
-            f"{report_file_name}.csv",
-        ]
-        subprocess.check_output(full_benchmark_comp_cmd)
+    #if benchmark is not None:
+    #    log.info("Benchmarking...")
+    #    full_benchmark_comp_cmd = [
+    #        "python3",
+    #        "./scripts/compare_regression_reports.py",
+    #        "--no-full-benchmark",
+    #        "--benchmark",
+    #        benchmark,
+    #        "--output-report",
+    #        f"{report_file_name}.rpt",
+    #        "--output-xlsx",
+    #        f"{report_file_name}.rpt.xlsx",
+    #        f"{report_file_name}.csv",
+    #    ]
+    #    subprocess.check_output(full_benchmark_comp_cmd)
 
     log.info("Done.")
 
