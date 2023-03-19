@@ -253,7 +253,7 @@ proc ins_diode_cells_4 {args} {
 
     set span "90000"
     if { [info exists ::env(DIODE_INSERTION_SHORT_SPAN)] } {
-        set span $::env(DIODE_INSERTION_STRATEGY)
+        set span $::env(DIODE_INSERTION_SHORT_SPAN)
     }
     manipulate_layout $::env(SCRIPTS_DIR)/odbpy/diodes.py place\
         -indexed_log [index_file $::env(routing_logs)/diodes.log]\
