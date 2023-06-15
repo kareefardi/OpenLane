@@ -15,7 +15,7 @@
         "dir::gl/aes_example.v"
     ],
     "EXTRA_LEFS": "dir::lef/aes_example.lef",
-    "EXTRA_GDS_FILES": "dir::gds/aes_example.gds",
+    "EXTRA_GDS_FILES": "dir::gds/aes_example.gds.gz",
     "EXTRA_SPEFS": ["aes_example", "dir::spef/multicorner/aes_example.min.spef", "dir::spef/multicorner/aes_example.nom.spef", "dir::spef/multicorner/aes_example.max.spef"],
     "BASE_SDC_FILE": "dir::base_user_project_wrapper.sdc",
     "IO_SYNC": 0,
