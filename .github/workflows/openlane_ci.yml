@@ -33,7 +33,7 @@ jobs:
 
       - name: Check Disk Size
         run: |
-          sudo df -h
+          df -h
 
       - name: Build (or Get) PDK
         run: |
@@ -68,7 +68,7 @@ jobs:
 
       - name: Check Disk Size (Post Build or Get)
         run: |
-          sudo df -h
+          df -h
 
       - name: Tarball PDK
         run: |
