@@ -66,6 +66,10 @@ jobs:
               $OPDKS_VER
           fi
 
+      - name: Check Disk Size (Post Build or Get)
+        run: |
+          sudo df -h
+
       - name: Tarball PDK
         run: |
           tar -cf /tmp/${{ matrix.pdk }}.tar -C $PDK_ROOT/${{ matrix.pdk }} .
