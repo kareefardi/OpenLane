@@ -31,6 +31,10 @@ jobs:
           # GHR (Pushing)
           go install github.com/tcnksm/ghr@latest
 
+      - name: Check Disk Size
+        run: |
+          sudo df -h
+
       - name: Build (or Get) PDK
         run: |
           export PATH=$PATH:$(go env GOPATH)/bin
