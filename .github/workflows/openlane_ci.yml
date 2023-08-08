@@ -50,9 +50,11 @@ jobs:
           cd volare
           git checkout sky130-new-build
           pip install -r requirements.txt
+          pip install -r requirements_dev.txt
+          pip install .
           export OPDKS_VER="$(python3 ./dependencies/tool.py open_pdks -f commit)"
           if [ "${{ vars.VOLARE_REPO }}" != "" ]; then
-            python3 -m volare enable_or_build\
+            volare enable_or_build\
               --pdk $PDK_FAMILY\
               --build-magic\
               --also-push\
@@ -62,7 +64,7 @@ jobs:
               -j$(nproc)\
               $OPDKS_VER
           else
-            python3 -m volare enable_or_build\
+            volare enable_or_build\
               --pdk $PDK_FAMILY\
               --build-magic\
               --token ${{ secrets.MY_TOKEN }}\
