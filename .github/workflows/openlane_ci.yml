@@ -49,7 +49,7 @@ jobs:
           git clone https://github.com/efabless/volare.git
           cd volare
           git checkout sky130-new-build
-          pip install rich
+          pip install -r requirements.txt
           pip install .
           export OPDKS_VER="$(python3 ./dependencies/tool.py open_pdks -f commit)"
           if [ "${{ vars.VOLARE_REPO }}" != "" ]; then
