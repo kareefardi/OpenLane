@@ -45,10 +45,13 @@ jobs:
           sudo mkdir -p ${{ env.PDK_ROOT }}
           sudo chown -R $USER:$USER ${{ env.PDK_ROOT }}
 
-          python3 -m pip install --upgrade --no-cache-dir volare
+          sudo apt install git -y
+          git clone https://github.com/efabless/volare.git
+          cd volare
+          git checkout sky130-new-build
           export OPDKS_VER="$(python3 ./dependencies/tool.py open_pdks -f commit)"
           if [ "${{ vars.VOLARE_REPO }}" != "" ]; then
-            volare enable_or_build\
+            python3 -m volare enable_or_build\
               --pdk $PDK_FAMILY\
               --build-magic\
               --also-push\
@@ -58,7 +61,7 @@ jobs:
               -j$(nproc)\
               $OPDKS_VER
           else
-            volare enable_or_build\
+            python3 -m volare enable_or_build\
               --pdk $PDK_FAMILY\
               --build-magic\
               --token ${{ secrets.MY_TOKEN }}\
