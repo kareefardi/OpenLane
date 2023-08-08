@@ -75,6 +75,7 @@ jobs:
       - name: Check Disk Size (Post Build or Get)
         run: |
           df -h
+          du -hs * | sort -h
 
       - name: Tarball PDK
         run: |
