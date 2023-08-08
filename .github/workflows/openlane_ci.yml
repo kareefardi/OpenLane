@@ -49,9 +49,9 @@ jobs:
           git clone https://github.com/efabless/volare.git
           cd volare
           git checkout sky130-new-build
-          pip install -r requirements.txt
-          pip install -r requirements_dev.txt
-          pip install .
+          python3 -m pip install --upgrade --no-cache-dir -r requirements.txt
+          python3 -m pip install --upgrade --no-cache-dir -r requirements_dev.txt
+          python3 -m pip install --upgrade --no-cache-dir .
           export OPDKS_VER="$(python3 ./dependencies/tool.py open_pdks -f commit)"
           if [ "${{ vars.VOLARE_REPO }}" != "" ]; then
             volare enable_or_build\
